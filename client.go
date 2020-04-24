@@ -12,8 +12,14 @@ type Client struct {
 	ServiceName string
 	Path        string
 
-	collectors    []prometheus.Collector
-	defaultLabels prometheus.Labels
+	// Enable metrics of runtime. Default enabled.
+	EnableRuntime bool
+
+	// Labels which will always be attached to metrics.
+	ConstLabels prometheus.Labels
+
+	runtimeCollectors []prometheus.Collector
+	collectors        []prometheus.Collector
 }
 
 // ListenAndServe listen on the addr and provide access for prometheus server to
@@ -21,7 +27,12 @@ type Client struct {
 func (c *Client) ListenAndServe(addr string) error {
 	reg := prometheus.NewRegistry()
 
-	// Register different collectors.
+	// Register collectors.
+	if c.EnableRuntime {
+		registerRuntime(c.ServiceName, &c.runtimeCollectors, c.ConstLabels)
+		reg.MustRegister(c.runtimeCollectors...)
+		constructs = append(constructs, updateRuntimeGuage)
+	}
 	reg.MustRegister(c.collectors...)
 
 	http.Handle(
@@ -48,10 +59,6 @@ func decorateHandler(h http.Handler) http.Handler {
 	return &decoratedHandler{h}
 }
 
-func init() {
-	constructs = append(constructs, updateRuntimeGuage)
-}
-
 var constructs []func()
 
 // UseConstruct 给添加构造方法。这些方法会在 prometheus 访问服务接口时并在返回结果前被调用，
@@ -62,8 +69,9 @@ func UseConstruct(f func()) {
 
 // NewClient creates and returns a new Client instance.
 func NewClient(serviceName string, path string) *Client {
-	c := &Client{ServiceName: serviceName, Path: path}
-	registerRuntime(c.ServiceName, &c.collectors, c.defaultLabels)
-
-	return c
+	return &Client{
+		ServiceName:   serviceName,
+		Path:          path,
+		EnableRuntime: true,
+	}
 }

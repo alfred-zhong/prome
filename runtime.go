@@ -1,6 +1,7 @@
 package prome
 
 import (
+	"fmt"
 	"runtime"
 	"runtime/pprof"
 
@@ -29,15 +30,16 @@ var (
 	runtimeNumCPUGauge         prometheus.Gauge
 )
 
-func attachLabel(
+func attachRuntimeLabel(
 	labels prometheus.Labels,
-	name string, value string,
+	errorID string, desc string,
 ) prometheus.Labels {
 	if labels == nil {
 		labels = make(prometheus.Labels)
 	}
 
-	labels[name] = value
+	labels["errorId"] = errorID
+	labels["desc"] = desc
 	return labels
 }
 
@@ -46,44 +48,44 @@ func registerRuntime(
 	collectors *[]prometheus.Collector, defaultLabels prometheus.Labels,
 ) {
 	memstatsAllocGauge = prometheus.NewGauge(prometheus.GaugeOpts{
-		Name:        name,
-		ConstLabels: attachLabel(defaultLabels, "errorId", logIDMemstatsAllocGauge),
+		Name:        fmt.Sprintf("%s_%s", name, logIDMemstatsAllocGauge),
+		ConstLabels: attachRuntimeLabel(defaultLabels, logIDMemstatsAllocGauge, "Memstats alloc"),
 	})
 	*collectors = append(*collectors, memstatsAllocGauge)
 
 	memstatsSysGauge = prometheus.NewGauge(prometheus.GaugeOpts{
-		Name:        name,
-		ConstLabels: attachLabel(defaultLabels, "errorId", logIDMemstatsSysGauge),
+		Name:        fmt.Sprintf("%s_%s", name, logIDMemstatsSysGauge),
+		ConstLabels: attachRuntimeLabel(defaultLabels, logIDMemstatsSysGauge, "Memstats sys"),
 	})
 	*collectors = append(*collectors, memstatsSysGauge)
 
 	memstatsLastGCPauseNSGauge = prometheus.NewGauge(prometheus.GaugeOpts{
-		Name:        name,
-		ConstLabels: attachLabel(defaultLabels, "errorId", logIDMemstatsLastGCPauseNSGauge),
+		Name:        fmt.Sprintf("%s_%s", name, logIDMemstatsLastGCPauseNSGauge),
+		ConstLabels: attachRuntimeLabel(defaultLabels, logIDMemstatsLastGCPauseNSGauge, "Memstats GC pause"),
 	})
 	*collectors = append(*collectors, memstatsLastGCPauseNSGauge)
 
 	runtimeNumGoroutineGauge = prometheus.NewGauge(prometheus.GaugeOpts{
-		Name:        name,
-		ConstLabels: attachLabel(defaultLabels, "errorId", logIDRuntimeNumGoroutineGauge),
+		Name:        fmt.Sprintf("%s_%s", name, logIDRuntimeNumGoroutineGauge),
+		ConstLabels: attachRuntimeLabel(defaultLabels, logIDRuntimeNumGoroutineGauge, "Mumber of goroutines"),
 	})
 	*collectors = append(*collectors, runtimeNumGoroutineGauge)
 
 	osThreadsGauge = prometheus.NewGauge(prometheus.GaugeOpts{
-		Name:        name,
-		ConstLabels: attachLabel(defaultLabels, "errorId", logIDOSThreadsGauge),
+		Name:        fmt.Sprintf("%s_%s", name, logIDOSThreadsGauge),
+		ConstLabels: attachRuntimeLabel(defaultLabels, logIDOSThreadsGauge, "OS threads"),
 	})
 	*collectors = append(*collectors, osThreadsGauge)
 
 	runtimeGOMaxProcsGauge = prometheus.NewGauge(prometheus.GaugeOpts{
-		Name:        name,
-		ConstLabels: attachLabel(defaultLabels, "errorId", logIDRuntimeGOMaxProcsGauge),
+		Name:        fmt.Sprintf("%s_%s", name, logIDRuntimeGOMaxProcsGauge),
+		ConstLabels: attachRuntimeLabel(defaultLabels, logIDRuntimeGOMaxProcsGauge, "GOMAXPROCS"),
 	})
 	*collectors = append(*collectors, runtimeGOMaxProcsGauge)
 
 	runtimeNumCPUGauge = prometheus.NewGauge(prometheus.GaugeOpts{
-		Name:        name,
-		ConstLabels: attachLabel(defaultLabels, "errorId", logIDRuntimeNumCPUGauge),
+		Name:        fmt.Sprintf("%s_%s", name, logIDRuntimeNumCPUGauge),
+		ConstLabels: attachRuntimeLabel(defaultLabels, logIDRuntimeNumCPUGauge, "Number of CPUs"),
 	})
 	*collectors = append(*collectors, runtimeNumCPUGauge)
 }
