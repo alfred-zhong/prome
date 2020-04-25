@@ -61,8 +61,8 @@ func decorateHandler(h http.Handler) http.Handler {
 
 var constructs []func()
 
-// UseConstruct 给添加构造方法。这些方法会在 prometheus 访问服务接口时并在返回结果前被调用，
-// 通常用来更新监控指标。
+// UseConstruct add function f. Function f will be executed every time just after
+// request received.
 func UseConstruct(f func()) {
 	constructs = append(constructs, f)
 }
