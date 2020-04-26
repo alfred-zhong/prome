@@ -1,6 +1,7 @@
 package prome
 
 import (
+	"context"
 	"net/http"
 
 	"github.com/prometheus/client_golang/prometheus"
@@ -18,6 +19,7 @@ type Client struct {
 	// Labels which will always be attached to metrics.
 	ConstLabels prometheus.Labels
 
+	srv               *http.Server
 	handler           http.Handler
 	runtimeCollectors []prometheus.Collector
 	collectors        []prometheus.Collector
@@ -43,7 +45,21 @@ func (c *Client) ListenAndServe(addr string) error {
 	}
 
 	http.Handle(c.Path, c.handler)
-	return http.ListenAndServe(addr, nil)
+	c.srv = &http.Server{
+		Addr: addr,
+	}
+	if err := c.srv.ListenAndServe(); err != http.ErrServerClosed {
+		return err
+	}
+	return nil
+}
+
+// Close shutdown of listening.
+func (c *Client) Close() error {
+	if c.srv != nil {
+		return c.srv.Shutdown(context.Background())
+	}
+	return nil
 }
 
 // Handler returns the http handler which can be used for fetch metrics data.
