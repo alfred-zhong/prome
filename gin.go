@@ -8,15 +8,16 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 )
 
-// MiddlewareQPS returns a gin HandlerFunc which can be used as middleware to
-// capture QPS counter.
-func (c *Client) MiddlewareQPS(metricsName string) gin.HandlerFunc {
+// MiddlewareRequestCount returns a gin HandlerFunc which can be used as
+// middleware to capture request count.
+func (c *Client) MiddlewareRequestCount(metricsName string) gin.HandlerFunc {
 	if metricsName == "" {
-		metricsName = fmt.Sprintf("%s_qps", c.ServiceName)
+		metricsName = fmt.Sprintf("%s_request_count", c.ServiceName)
 	}
 
 	cv := c.AddCounterVec(prometheus.CounterOpts{
 		Name: metricsName,
+		Help: "Request count",
 	}, []string{"method", "path"})
 
 	return func(c *gin.Context) {
@@ -33,13 +34,13 @@ var defaultDurationSummaryObjectives = map[float64]float64{
 	0.99: 0.001,
 }
 
-// MiddlewareDuration returns a gin handler which can be used as middleware to
-// capture API duration summary.
-func (c *Client) MiddlewareDuration(
+// MiddlewareRequestDuration returns a gin handler which can be used as
+// middleware to capture request duration summary.
+func (c *Client) MiddlewareRequestDuration(
 	metricsName string, objectives map[float64]float64,
 ) gin.HandlerFunc {
 	if metricsName == "" {
-		metricsName = fmt.Sprintf("%s_duration", c.ServiceName)
+		metricsName = fmt.Sprintf("%s_request_duration", c.ServiceName)
 	}
 	if objectives == nil {
 		objectives = defaultDurationSummaryObjectives
@@ -48,6 +49,7 @@ func (c *Client) MiddlewareDuration(
 	sv := c.AddSummaryVec(prometheus.SummaryOpts{
 		Name:       metricsName,
 		Objectives: objectives,
+		Help:       "Request duration (Unit: ns)",
 	}, []string{"method", "path"})
 
 	return func(c *gin.Context) {
@@ -57,6 +59,6 @@ func (c *Client) MiddlewareDuration(
 
 		sv.WithLabelValues(
 			c.Request.Method, c.Request.URL.Path,
-		).Observe(float64(time.Since(startTime).Milliseconds()))
+		).Observe(float64(time.Since(startTime).Nanoseconds()))
 	}
 }
