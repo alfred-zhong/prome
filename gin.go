@@ -21,7 +21,7 @@ func (c *Client) MiddlewareRequestCount(metricsName string) gin.HandlerFunc {
 	}, []string{"method", "path"})
 
 	return func(c *gin.Context) {
-		cv.WithLabelValues(c.Request.Method, c.Request.URL.Path).Inc()
+		cv.WithLabelValues(c.Request.Method, c.FullPath()).Inc()
 
 		c.Next()
 	}
