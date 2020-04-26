@@ -27,7 +27,9 @@ func (c *Client) MiddlewareRequestCount(metricsName string) gin.HandlerFunc {
 	}
 }
 
-var defaultDurationSummaryObjectives = map[float64]float64{
+// DefaultRequestDurationSummaryObjectives represents objectives of request
+// duration middleware summary.
+var DefaultRequestDurationSummaryObjectives = map[float64]float64{
 	0.5:  0.05,
 	0.9:  0.01,
 	0.95: 0.005,
@@ -43,7 +45,7 @@ func (c *Client) MiddlewareRequestDuration(
 		metricsName = fmt.Sprintf("%s_request_duration", c.ServiceName)
 	}
 	if objectives == nil {
-		objectives = defaultDurationSummaryObjectives
+		objectives = DefaultRequestDurationSummaryObjectives
 	}
 
 	sv := c.AddSummaryVec(prometheus.SummaryOpts{
