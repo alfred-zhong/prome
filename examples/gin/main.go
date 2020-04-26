@@ -13,8 +13,8 @@ func main() {
 	client.EnableRuntime = false
 
 	e := gin.New()
-	e.Use(client.QPSMiddleware(""))
-	e.Use(client.DurationMiddleware("", nil))
+	e.Use(client.MiddlewareQPS(""))
+	e.Use(client.MiddlewareDuration("", nil))
 
 	e.GET("/foo", gin.WrapH(client.Handler()))
 	e.GET("/sleep", func(c *gin.Context) {

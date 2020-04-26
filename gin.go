@@ -8,9 +8,9 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 )
 
-// QPSMiddleware returns a gin HandlerFunc which can be used as middleware to
+// MiddlewareQPS returns a gin HandlerFunc which can be used as middleware to
 // capture QPS counter.
-func (c *Client) QPSMiddleware(metricsName string) gin.HandlerFunc {
+func (c *Client) MiddlewareQPS(metricsName string) gin.HandlerFunc {
 	if metricsName == "" {
 		metricsName = fmt.Sprintf("%s_qps", c.ServiceName)
 	}
@@ -33,9 +33,9 @@ var defaultDurationSummaryObjectives = map[float64]float64{
 	0.99: 0.001,
 }
 
-// DurationMiddleware returns a gin handler which can be used as middleware to
+// MiddlewareDuration returns a gin handler which can be used as middleware to
 // capture API duration summary.
-func (c *Client) DurationMiddleware(
+func (c *Client) MiddlewareDuration(
 	metricsName string, objectives map[float64]float64,
 ) gin.HandlerFunc {
 	if metricsName == "" {
