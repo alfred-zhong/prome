@@ -18,6 +18,7 @@ type Client struct {
 	// Labels which will always be attached to metrics.
 	ConstLabels prometheus.Labels
 
+	handler           http.Handler
 	runtimeCollectors []prometheus.Collector
 	collectors        []prometheus.Collector
 }
@@ -25,23 +26,44 @@ type Client struct {
 // ListenAndServe listen on the addr and provide access for prometheus server to
 // pull data.
 func (c *Client) ListenAndServe(addr string) error {
-	reg := prometheus.NewRegistry()
+	if c.handler == nil {
+		reg := prometheus.NewRegistry()
 
-	// Register collectors.
-	if c.EnableRuntime {
-		registerRuntime(c.ServiceName, &c.runtimeCollectors, c.ConstLabels)
-		reg.MustRegister(c.runtimeCollectors...)
-		constructs = append(constructs, updateRuntimeGuage)
-	}
-	reg.MustRegister(c.collectors...)
+		// Register collectors.
+		if c.EnableRuntime {
+			registerRuntime(c.ServiceName, &c.runtimeCollectors, c.ConstLabels)
+			reg.MustRegister(c.runtimeCollectors...)
+			constructs = append(constructs, updateRuntimeGuage)
+		}
+		reg.MustRegister(c.collectors...)
 
-	http.Handle(
-		c.Path,
-		decorateHandler(
+		c.handler = decorateHandler(
 			promhttp.HandlerFor(reg, promhttp.HandlerOpts{}),
-		),
-	)
+		)
+	}
+
+	http.Handle(c.Path, c.handler)
 	return http.ListenAndServe(addr, nil)
+}
+
+// Handler returns the http handler which can be used for fetch metrics data.
+func (c *Client) Handler() http.Handler {
+	if c.handler == nil {
+		reg := prometheus.NewRegistry()
+
+		// Register collectors.
+		if c.EnableRuntime {
+			registerRuntime(c.ServiceName, &c.runtimeCollectors, c.ConstLabels)
+			reg.MustRegister(c.runtimeCollectors...)
+			constructs = append(constructs, updateRuntimeGuage)
+		}
+		reg.MustRegister(c.collectors...)
+
+		c.handler = decorateHandler(
+			promhttp.HandlerFor(reg, promhttp.HandlerOpts{}),
+		)
+	}
+	return c.handler
 }
 
 type decoratedHandler struct {
