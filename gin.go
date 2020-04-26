@@ -60,7 +60,7 @@ func (c *Client) MiddlewareRequestDuration(
 		c.Next()
 
 		sv.WithLabelValues(
-			c.Request.Method, c.Request.URL.Path,
+			c.Request.Method, c.FullPath(),
 		).Observe(float64(time.Since(startTime).Nanoseconds()))
 	}
 }
