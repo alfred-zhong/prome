@@ -66,6 +66,8 @@ func (c *Client) Handler() http.Handler {
 	return c.handler
 }
 
+var constructs []func()
+
 type decoratedHandler struct {
 	h http.Handler
 }
@@ -79,14 +81,6 @@ func (d *decoratedHandler) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 
 func decorateHandler(h http.Handler) http.Handler {
 	return &decoratedHandler{h}
-}
-
-var constructs []func()
-
-// UseConstruct add function f. Function f will be executed every time just after
-// request received.
-func UseConstruct(f func()) {
-	constructs = append(constructs, f)
 }
 
 // NewClient creates and returns a new Client instance.
