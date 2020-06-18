@@ -6,7 +6,7 @@ Prometheus Client for easy use.
 
 ## Why
 
-I wrote this library so i can easyly use it in my Go projects.
+I wrote this library so i can easily use it in my Go projects.
 
 ## Features
 
