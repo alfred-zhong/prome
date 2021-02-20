@@ -1,6 +1,8 @@
-# prome
+# prome [Deprecated]
 
 ![Go](https://github.com/alfred-zhong/prome/workflows/Go/badge.svg?branch=master) [![GoDoc](https://godoc.org/github.com/alfred-zhong/prome?status.svg)](https://pkg.go.dev/github.com/alfred-zhong/prome) [![Go Report Card](https://goreportcard.com/badge/github.com/alfred-zhong/prome)](https://goreportcard.com/report/github.com/alfred-zhong/prome)
+
+**Deprecated. This repository has been merged into [goutil](https://github.com/alfred-zhong/goutil).**
 
 Prometheus Client for easy use.
 
